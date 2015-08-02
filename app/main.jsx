@@ -1,4 +1,4 @@
-// import './main.css';
+import './stylesheets/main.css';
 
 import React from 'react';
 import App from './components/App';
