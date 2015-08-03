@@ -2,7 +2,6 @@ import alt from '../libs/alt';
 import NoteActions from '../actions/NoteActions';
 import findIndex from '../libs/find_index';
 
-
 class NoteStore {
   constructor() {
     this.bindActions(NoteActions);

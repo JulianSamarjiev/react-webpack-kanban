@@ -22,7 +22,6 @@ var common = {
         include: path.resolve(ROOT_PATH, 'app')
       }
     ]
-
   },
   plugins: [
     new HtmlwebpackPlugin({
