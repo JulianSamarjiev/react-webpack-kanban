@@ -1,68 +1,51 @@
-import uuid from 'node-uuid';
-import AltContainer from 'alt/AltContainer';
 import React from 'react';
-import Notes from './Notes';
-import NoteActions from '../actions/NoteActions';
-import NoteStore from '../stores/NoteStore';
-import LaneActions from '../actions/LaneActions';
-import Editable from './Editable';
 
-export default class Lane extends React.Component {
+export default class Editable extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.finishEdit = this.finishEdit.bind(this);
+    this.checkEnter = this.checkEnter.bind(this);
+    this.edit = this.edit.bind(this);
+    this.renderEdit = this.renderEdit.bind(this);
+    this.renderValue = this.renderValue.bind(this);
+
+    this.state = {
+      edited: false
+    };
+  }
   render() {
-    const {id, name, notes, ...props} = this.props;
+    const {value, onEdit, ...props} = this.props;
+    const edited = this.state.edited;
 
-    return (
-      <div {...props}>
-        <div className='lane-header'>
-          <Editable className='lane-name' value={name}
-            onEdit={this.nameEdited.bind(null, id)} />
-          <div className='lane-add-note'>
-            <button onClick={this.addNote.bind(null, id)}>+</button>
-          </div>
-        </div>
-        <AltContainer
-          stores={[NoteStore]}
-          inject={ {
-            items: () => {
-              const allNotes = NoteStore.getState().notes || [];
-              const allNotesIds = allNotes.map((note) => note.id);
-
-              if(notes) {
-                return notes.map((note) => {
-                  return allNotes[allNotesIds.indexOf(note)];
-                });
-              }
-
-              return [];
-            }
-          } }
-        >
-          <Notes onEdit={this.noteEdited.bind(null, id)} />
-        </AltContainer>
-      </div>
-    );
+    return <div {...props}>
+      {edited ? this.renderEdit() : this.renderValue()}
+    </div>;
   }
-  addNote(laneId) {
-    const noteId = uuid.v4();
-
-    NoteActions.create({id: noteId, task: 'New task'});
-    LaneActions.attachToLane({laneId, noteId});
+  renderEdit() {
+    return <input type='text'
+      defaultValue={this.props.value}
+      onBlur={this.finishEdit}
+      onKeyPress={this.checkEnter}/>;
   }
-  noteEdited(laneId, noteId, task) {
-    if(task) {
-      NoteActions.update({id: noteId, task});
-    }
-    else {
-      NoteActions.delete(noteId);
-      LaneActions.detachFromLane({laneId, noteId});
+  renderValue() {
+    return <div onClick={this.edit}>{this.props.value}</div>;
+  }
+  edit() {
+    this.setState({
+      edited: true
+    });
+  }
+  checkEnter(e) {
+    if(e.key === 'Enter') {
+      this.finishEdit(e);
     }
   }
-  nameEdited(id, name) {
-    if(name) {
-      LaneActions.update({id, name});
-    }
-    else {
-      LaneActions.delete(id);
-    }
+  finishEdit(e) {
+    this.props.onEdit(e.target.value);
+
+    this.setState({
+      edited: false
+    });
   }
 }

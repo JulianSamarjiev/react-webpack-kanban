@@ -1,24 +1,13 @@
 import React from 'react';
-import Editable from './Editable';
+import Lane from './Lane';
 
-export default class Notes extends React.Component {
-  constructor(props) {
-    super(props);
-
-    this.renderNote = this.renderNote.bind(this);
-  }
+export default class Lanes extends React.Component {
   render() {
-    const notes = this.props.items;
+    const lanes = this.props.items;
 
-    return <ul className="notes">{notes.map(this.renderNote)}</ul>;
+    return <div className='lanes'>{lanes.map(this.renderLane)}</div>;
   }
-  renderNote(note, i) {
-    return (
-      <li className="note" key={`note${note.id}`}>
-        <Editable
-          value={note.task}
-          onEdit={this.props.onEdit.bind(null, note.id)} />
-      </li>
-    );
+  renderLane(lane) {
+    return <Lane className='lane' key={`lane${lane.id}`} {...lane} />;
   }
 }
