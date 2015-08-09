@@ -1,6 +1,5 @@
 import alt from '../libs/alt';
 import LaneActions from '../actions/LaneActions';
-import findIndex from '../libs/find_index';
 
 class LaneStore {
   constructor() {
@@ -17,17 +16,17 @@ class LaneStore {
       lanes: lanes.concat(lane)
     });
   }
-  update(lane) {
+  update({id, name}) {
     const lanes = this.lanes;
-    const targetId = findIndex(lanes, 'id', lane.id);
+    const targetId = lanes.findIndex((lane) => lane.id === id);
 
-    lanes[targetId].name = lane.name;
+    lanes[targetId].name = name;
 
     this.setState({lanes});
   }
   delete(id) {
     const lanes = this.lanes;
-    const targetId = findIndex(lanes, 'id', id);
+    const targetId = lanes.findIndex((lane) => lane.id === id);
 
     this.setState({
       lanes: lanes.slice(0, targetId).concat(lanes.slice(targetId + 1))
@@ -35,7 +34,7 @@ class LaneStore {
   }
   attachToLane({laneId, noteId}) {
     const lanes = this.lanes;
-    const targetId = findIndex(lanes, 'id', laneId);
+    const targetId = lanes.findIndex((lane) => lane.id === laneId);
 
     if(targetId < 0) {
       return console.warn('Failed to find target lane');
@@ -54,7 +53,7 @@ class LaneStore {
   }
   detachFromLane({laneId, noteId}) {
     const lanes = this.lanes;
-    const targetId = findIndex(lanes, 'id', laneId);
+    const targetId = lanes.findIndex((lane) => lane.id === laneId);
 
     if(targetId < 0) {
       return console.warn('Failed to find target lane');

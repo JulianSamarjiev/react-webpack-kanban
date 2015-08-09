@@ -1,51 +1,57 @@
+import uuid from 'node-uuid';
+import AltContainer from 'alt/AltContainer';
 import React from 'react';
+import Notes from './Notes';
+import NoteActions from '../actions/NoteActions';
+import NoteStore from '../stores/NoteStore';
+import LaneActions from '../actions/LaneActions';
+import Editable from './Editable';
 
-export default class Editable extends React.Component {
-  constructor(props) {
-    super(props);
-
-    this.finishEdit = this.finishEdit.bind(this);
-    this.checkEnter = this.checkEnter.bind(this);
-    this.edit = this.edit.bind(this);
-    this.renderEdit = this.renderEdit.bind(this);
-    this.renderValue = this.renderValue.bind(this);
-
-    this.state = {
-      edited: false
-    };
-  }
+export default class Lane extends React.Component {
   render() {
-    const {value, onEdit, ...props} = this.props;
-    const edited = this.state.edited;
+    const {id, name, notes, ...props} = this.props;
 
-    return <div {...props}>
-      {edited ? this.renderEdit() : this.renderValue()}
-    </div>;
+    return (
+      <div {...props}>
+        <div className='lane-header'>
+          <Editable className='lane-name' value={name}
+            onEdit={this.nameEdited.bind(null, id)} />
+          <div className='lane-add-note'>
+            <button onClick={this.addNote.bind(null, id)}>+</button>
+          </div>
+        </div>
+        <AltContainer
+          stores={[NoteStore]}
+          inject={ {
+            items: () => NoteStore.get(notes)
+          } }
+        >
+          <Notes onEdit={this.noteEdited.bind(null, id)} />
+        </AltContainer>
+      </div>
+    );
   }
-  renderEdit() {
-    return <input type='text'
-      defaultValue={this.props.value}
-      onBlur={this.finishEdit}
-      onKeyPress={this.checkEnter}/>;
+  addNote(laneId) {
+    const noteId = uuid.v4();
+
+    NoteActions.create({id: noteId, task: 'New task'});
+    LaneActions.attachToLane({laneId, noteId});
   }
-  renderValue() {
-    return <div onClick={this.edit}>{this.props.value}</div>;
-  }
-  edit() {
-    this.setState({
-      edited: true
-    });
-  }
-  checkEnter(e) {
-    if(e.key === 'Enter') {
-      this.finishEdit(e);
+  noteEdited(laneId, noteId, task) {
+    if(task) {
+      NoteActions.update({id: noteId, task});
+    }
+    else {
+      NoteActions.delete(noteId);
+      LaneActions.detachFromLane({laneId, noteId});
     }
   }
-  finishEdit(e) {
-    this.props.onEdit(e.target.value);
-
-    this.setState({
-      edited: false
-    });
+  nameEdited(id, name) {
+    if(name) {
+      LaneActions.update({id, name});
+    }
+    else {
+      LaneActions.delete(id);
+    }
   }
 }
